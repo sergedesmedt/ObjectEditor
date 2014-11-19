@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="HFK.ObjectEditor.WPF.SampleApp.CustomHolder.GroupBoxHolder"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:c="clr-namespace:HFK.ObjectEditor.WPF;assembly=ObjectEditor.WPF"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300" Loaded="UserControl_Loaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" />
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel FlowDirection="LeftToRight" Orientation="Horizontal"  Grid.Row="0">
+            <Button Name="showProperties" Click="showProperties_Click" >show properties</Button>
+        </StackPanel>
+        <ScrollViewer  Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden">
+            <c:ObjectEditor x:Name="MyObjectEditor" >
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="c:ObjectEditorItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="c:ObjectEditorItem">
+                                    <GroupBox Header="{Binding DisplayName}">
+                                        <ContentPresenter Content="{TemplateBinding Content}"
+                                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                      ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                            />
+                                    </GroupBox>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+            </c:ObjectEditor>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

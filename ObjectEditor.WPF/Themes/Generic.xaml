@@ -1,0 +1,14 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+        <!--<ResourceDictionary Source="/ObjectEditor.WPF;component/Themes/ObjectEditor.xaml" />-->
+        <ResourceDictionary Source="/ObjectEditor.WPF;component/Themes/ObjectEditorItem.xaml" />
+        <ResourceDictionary Source="/ObjectEditor.WPF;component/Themes/DefaultEditorTemplates.xaml" />
+        <!--<ResourceDictionary Source="/ObjectEditor.WPF;component/TypeEditors/IntegerEditor.xaml" />
+        <ResourceDictionary Source="/ObjectEditor.WPF;component/TypeEditors/StringEditor.xaml" />
+        <ResourceDictionary Source="/ObjectEditor.WPF;component/TypeEditors/EnumEditor.xaml" />
+        <ResourceDictionary Source="/ObjectEditor.WPF;component/TypeEditors/FlagEditor.xaml" />-->
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

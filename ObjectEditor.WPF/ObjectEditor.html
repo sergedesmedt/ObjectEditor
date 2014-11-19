@@ -1,0 +1,209 @@
+Yes, this also is an ItemsControl - Part 2: A property editor
+
+<h2>Introduction</h2>
+<p>This time I will show you an ibject editor control. Again, this is not the first implementation available for WPF: there are a number of other implementations available on the web, like the one available in the <a href="http://propertytools.codeplex.com/">Property Tools</a> project, or this <a href="http://wpg.codeplex.com/">WPF Property Grid</a>. You can also find one in the <a href="http://wpftoolkit.codeplex.com/">XCEED Extended WPF Toolkit</a>. Most of these have far more functionality then the one I present here. Which is why I present you mine here: it's relativelly simple with not much styling making it easier to grasp how it works.</p>
+<p>And thus again:</p>
+<p>Disclaimer: This is a proof of concept. As such, the code has no intention to be feature complete, neither being of high quality or exception proof.</p>
+<h2>Implementation</h2>
+<h3>Choosing the base control</h3>
+<p>I've choosen to derive directly from the <code>ItemsControl</code> because none of the existing derivations provide any useful functionality I could use. On the contrary: a <code>ListBox</code> for example allows for selection of one of the items in it, something which isn't desired in an object editor.</p>
+<h3>Implementing the ObjectEditor</h3>
+<p>The <code>ObjectEditor</code> derives directly from the <code>ItemsControl</code> and only adds two properties:</p>
+<ul class="property">
+<li><code>ObjectToEdit</code>: this is the object whose properties we will edit.</li>
+<li><code>EditorRegistry</code>: a mapping of types and controls to use for editing those types.</li>
+</ul>
+<p>Inside the constructor of the control we set the ItemTemplateSelector to the type TypeEditorDataTemplateSelector which implements the selection of the editors based on the type of the properties of the object. This class implements the default mapping, but the <code>EditorRegistry</code> allows for adding editors for specific types or for using specific editors for certain types.</p>
+<h4>ContentItemsControl.cs</h4>
+<pre lang="cs">public class ObjectEditor : ItemsControl
+{
+	public ObjectEditor()
+	{
+		ItemTemplateSelector = new TypeEditorDataTemplateSelector();
+	}
+
+	public object ObjectToEdit
+	{
+		get { return objectToEdit; }
+		set
+		{
+			objectToEdit = value;
+			ItemsSource = ObjectAnalyzer.GetProperties(objectToEdit);
+		}
+	}
+
+	public TypeEditorRegistry EditorRegistry
+	{
+		get
+		{
+			if (ItemTemplateSelector is TypeEditorDataTemplateSelector)
+				return (ItemTemplateSelector as TypeEditorDataTemplateSelector).EditorRegistry;
+
+			return null;
+		}
+		set
+		{
+			if (ItemTemplateSelector is TypeEditorDataTemplateSelector)
+				(ItemTemplateSelector as TypeEditorDataTemplateSelector).EditorRegistry = value;
+		}
+	}
+}</pre>
+<h4>TypeEditorDataTemplateSelector.cs</h4>
+<pre lang="cs">public class TypeEditorDataTemplateSelector : DataTemplateSelector
+{
+	public TypeEditorRegistry EditorRegistry
+	{
+		get;
+		set;
+	}
+
+	public override DataTemplate
+		SelectTemplate(object item, DependencyObject container)
+	{
+		FrameworkElement element = container as FrameworkElement;
+
+		if (element != null && item != null && item is PropertyEditor)
+		{
+			PropertyEditor propertyDescriptor = item as PropertyEditor;
+
+			if (EditorRegistry != null && EditorRegistry.ContainsKey(propertyDescriptor.DataType))
+			{
+				return EditorRegistry[propertyDescriptor.DataType];
+			}
+
+			if (propertyDescriptor.DataType == typeof(int))
+			{
+				ComponentResourceKey integerKey = new ComponentResourceKey(typeof(ObjectEditor), "integerEditorTemplate");
+				return element.FindResource(integerKey) as DataTemplate;
+			}
+			else if (propertyDescriptor.DataType == typeof(string))
+			{
+				ComponentResourceKey stringKey = new ComponentResourceKey(typeof(ObjectEditor), "defaultEditorTemplate");
+				return element.FindResource(stringKey) as DataTemplate;
+			}
+			else if (propertyDescriptor.DataType.IsEnum)
+			{
+				if (propertyDescriptor.DataType.GetCustomAttributes(typeof(FlagsAttribute), true).Count() == 0)
+				{
+					ComponentResourceKey stringKey = new ComponentResourceKey(typeof(ObjectEditor), "singleSelectEditorTemplate");
+					return element.FindResource(stringKey) as DataTemplate;
+				}
+				else
+				{
+					ComponentResourceKey stringKey = new ComponentResourceKey(typeof(ObjectEditor), "multiSelectEditorTemplate");
+					return element.FindResource(stringKey) as DataTemplate;
+				}
+			}
+			else
+			{
+				throw new NotSupportedException();
+			}
+		}
+
+		return null;
+	}
+}</pre>
+<h3>Filling the ObjectEditor</h3>
+<p>To fill the <code>ObjectEditor</code> with items we use the <code>ObjectAnalyzer</code>. This class is used to convert an object to a list of <code>PropertyEditor</code> objects, which has three derived classes:</p>
+<ol>
+<li><code>SettablePropertyEditor</code>: allows the setting of a property with just about any value.</li>
+<li><code>SingleSelectablePropertyEditor</code>: Allows the setting of a property from a finit list of values. An example is an enumeration.</li>
+<li><code>MultiSelectablePropertyEditor</code>: Allows the setting of a property from a finit list of values which can be combined. An example is an flag.</li>
+</ol>
+<p>The <code>PropertyEditor</code> is responsible for getting and setting the value of the property of the object.</p>
+<p>Depending on the type of subclass this happens by binding directly to the value or by binding to a list of possible values which have a selected property.</p>
+<h4>SettablePropertyEditor.cs</h4>
+<pre lang="cs">public class SettablePropertyEditor : PropertyEditor, IDataErrorInfo
+{
+	// More code preceding
+	
+	public object Value
+	{
+		get
+		{
+			if (Converter == null)
+			{
+				throw new NotSupportedException();
+			}
+
+			return (string)Converter.ConvertTo(Property.GetValue(ObjectToEdit/*, null*/), typeof(string));
+		}
+
+		set
+		{
+			if (Converter == null)
+			{
+				throw new NotSupportedException();
+			}
+
+			if (Property.PropertyType.IsAssignableFrom(value.GetType()))
+			{
+				Property.SetValue(ObjectToEdit, value);
+				return;
+			}
+
+			Property.SetValue(ObjectToEdit, Converter.ConvertFrom(null, null, value)/*, null*/);
+		}
+	}
+	
+	//More code following
+}</pre>
+<p>As you can see from the above code, by binding to the <code>Value</code> property you ultimately set the property represented by this object. The <code>SettablePropertyEditor</code> has a <code>Converter</code> property which allows for the type conversion of the value from the editor, which will typicaly be a string, to the type of the object property. The <code>Converter</code> property is set in the <code>ObjectAnalyzer</code> during construction of the <code>PropertyEditor</code>s.</p>
+<h4>SingleSelectablePropertyEditor.cs</h4>
+<pre lang="cs">public class SingleSelectablePropertyEditor : PropertyEditor
+{
+	public SingleSelectablePropertyEditor(PropertyDescriptor propertyDescriptor, object target)
+		: base(propertyDescriptor, target)
+	{
+		valueList = new SingleSelectMemberList();
+
+		if (propertyDescriptor.PropertyType.IsEnum)
+		{
+			foreach (FieldInfo field in propertyDescriptor.PropertyType.GetFields(BindingFlags.Static | BindingFlags.Public))
+			{
+				SelectMember member = new SelectMember() { Value = field.Name, Display = field.Name };
+				object[] displayAttributes = field.GetCustomAttributes(typeof(DisplayAttribute), false);
+				if(displayAttributes.Count() != 0)
+				{
+					DisplayAttribute displayAttribute = displayAttributes[0] as DisplayAttribute;
+					member.Display = displayAttribute.Name;
+				}
+				if (propertyDescriptor.GetValue(target).ToString() == field.Name)
+				{
+					member.IsSelected = true;
+				}
+				valueList.Add(member);
+			}
+		}
+		else
+		{
+			// Values can also be provided using the AllowedStringValue attribute
+		}
+
+		valueList.SelectedValueChanged += new EventHandler<SelectedValue>(valueList_SelectedValueChanged);
+	}
+
+	public SingleSelectMemberList ValueList
+	{
+		get
+		{
+			return valueList;
+		}
+		set
+		{
+		}
+	}
+
+	private void valueList_SelectedValueChanged(object sender, SelectedValue e)
+	{
+		Property.SetValue(ObjectToEdit, Enum.Parse(Property.PropertyType, e.Value)/*, null*/);
+	}
+}</pre>
+<p>In the constructor a list of possible values is created. In the case of a <code>SingleSelectablePropertyEditor</code> this is a <code>SingleSelectMemberList</code>. In the XAML we bind the <code>ItemsSource</code> of a <code>ListBox</code> to this list. The <code>ListBoxItems<code> have a <code>CheckBox</code> as content which is bound to the <code>IsSelected</code> property of the <code>SelectMember</code>s in the list. The fact that only a single value can be selected is managed by the <code>SingleSelectMemberList</code>.</p>
+=====CODE VAN EnumMemberList_PropertyChanged VAN SingleSelectMemberList=====
+
+<h4>MultiSelectablePropertyEditor.cs</h4>
+<pre>
+</pre>
+<p>The <code>MultiSelectablePropertyEditor</code> is very similar to the <code>SingleSelectablePropertyEditor</code>: it also binds to a list of possible values, this time represented by the <code>MultiSelectMemberList</code>, which manages the fact that multiple items can be selected.</p>
+======CODE VAN EnumMemberList_PropertyChanged VAN MultiSelectMemberList======

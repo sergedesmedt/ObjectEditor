@@ -1,0 +1,152 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:HFK.ObjectEditor.WPF"
+                    xmlns:behaviour="clr-namespace:HFK.ObjectEditor.WPF.Behaviours"
+                    xmlns:validator="clr-namespace:HFK.ObjectEditor.WPF.Validators">
+    <DataTemplate x:Key="{ComponentResourceKey {x:Type local:ObjectEditor}, singleSelectEditorTemplate}">
+        <Grid Background="#FFC0C0C0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <ListBox Grid.Row="0" ItemsSource="{Binding ValueList}">
+                <ListBox.Resources>
+                    <Style x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem">
+                        <Setter Property="SnapsToDevicePixels" Value="true"/>
+                        <Setter Property="OverridesDefaultStyle" Value="true"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <RadioButton x:Name="radio" IsChecked="{Binding IsSelected}">
+                                        <RadioButton.Content>
+                                            <ContentPresenter />
+                                        </RadioButton.Content>
+                                    </RadioButton>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.Resources>
+                <ListBox.Template>
+                    <ControlTemplate>
+                        <Border BorderThickness="0" 
+                                  Padding="1,1,1,1" 
+                                  Background="Transparent" 
+                                  Name="theBorder" 
+                                  SnapsToDevicePixels="True">
+                            <ScrollViewer Padding="{TemplateBinding Control.Padding}" Focusable="False">
+                                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </ListBox.Template>
+            </ListBox>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="{ComponentResourceKey {x:Type local:ObjectEditor}, multiSelectEditorTemplate}">
+        <Grid Background="#FFC0C0C0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <ListBox Grid.Row="0" ItemsSource="{Binding ValueList}">
+                <ListBox.Resources>
+                    <Style x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem">
+                        <Setter Property="SnapsToDevicePixels" Value="true"/>
+                        <Setter Property="OverridesDefaultStyle" Value="true"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <CheckBox x:Name="radio" IsChecked="{Binding IsSelected}">
+                                        <CheckBox.Content>
+                                            <ContentPresenter />
+                                        </CheckBox.Content>
+                                    </CheckBox>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.Resources>
+                <ListBox.Template>
+                    <ControlTemplate>
+                        <Border BorderThickness="0" 
+                                  Padding="1,1,1,1" 
+                                  Background="Transparent" 
+                                  Name="theBorder" 
+                                  SnapsToDevicePixels="True">
+                            <ScrollViewer Padding="{TemplateBinding Control.Padding}" Focusable="False">
+                                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </ListBox.Template>
+            </ListBox>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="{ComponentResourceKey {x:Type local:ObjectEditor}, defaultEditorTemplate}">
+        <Grid Background="#FFC0C0C0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <TextBox Grid.Row="0">
+                <TextBox.Text>
+                    <Binding Mode="TwoWay" Path="Value" UpdateSourceTrigger="PropertyChanged" 
+                        ValidatesOnDataErrors="True" NotifyOnValidationError="True">
+                    </Binding>
+                </TextBox.Text>
+                <Validation.ErrorTemplate>
+                    <ControlTemplate>
+                        <DockPanel LastChildFill="true">
+                            <AdornedElementPlaceholder Name="customAdorner" VerticalAlignment="Center" >
+                                <Border BorderBrush="red" BorderThickness="1" />
+                            </AdornedElementPlaceholder>
+                        </DockPanel>
+                    </ControlTemplate>
+                </Validation.ErrorTemplate>
+            </TextBox>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="{ComponentResourceKey {x:Type local:ObjectEditor}, integerEditorTemplate}">
+        <Grid Background="#FFC0C0C0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <TextBox Grid.Row="0">
+                <TextBox.Text>
+                    <Binding Mode="TwoWay" Path="Value" UpdateSourceTrigger="PropertyChanged" 
+                        ValidatesOnDataErrors="True" NotifyOnValidationError="True" >
+                        <Binding.ValidationRules>
+                            <validator:IntegerValidationRule />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+                <Validation.ErrorTemplate>
+                    <ControlTemplate>
+                        <DockPanel LastChildFill="true">
+                            <AdornedElementPlaceholder Name="customAdorner" VerticalAlignment="Center" >
+                                <Border BorderBrush="red" BorderThickness="1" />
+                            </AdornedElementPlaceholder>
+                        </DockPanel>
+                    </ControlTemplate>
+                </Validation.ErrorTemplate>
+            </TextBox>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="{ComponentResourceKey {x:Type local:ObjectEditor}, boolEditorTemplate}">
+        <Grid Background="#FFC0C0C0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <CheckBox Grid.Row="0">
+                <CheckBox.IsChecked>
+                    <Binding Mode="TwoWay" Path="Value" UpdateSourceTrigger="PropertyChanged" 
+                        ValidatesOnDataErrors="True" NotifyOnValidationError="True" >
+                    </Binding>
+                </CheckBox.IsChecked>
+            </CheckBox>
+        </Grid>
+    </DataTemplate>
+                  
+</ResourceDictionary>

@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:l="clr-namespace:HFK.ObjectEditor.WPF.SampleApp"
+                    xmlns:te="clr-namespace:HFK.ObjectEditor.WPF.SampleApp.TypeEditor">
+    <DataTemplate x:Key="upDownIntegerEditorTemplate">
+        <te:UpDownIntegerEditor Value="{Binding Path=Value, Mode=TwoWay}"/>
+    </DataTemplate>
+</ResourceDictionary>
